@@ -128,6 +128,26 @@ toolreview uninstall          # remove hooks and hook trust; retain review histo
 Uninstall retains the Codex project's trust entry. Review that entry separately
 if you no longer want the project trusted.
 
+## Personal configuration without a fork
+
+Use this public executable directly. Keep personal settings and private evaluation
+material in a separate directory or private repository, outside this checkout.
+The existing configuration precedence supplies the overlay: built-in defaults,
+then the selected TOML file, then environment overrides. No private code patch is
+needed for provider URLs, models, credentials commands or the Codex profile.
+
+`~/.config/toolreview/config.toml` can be a symlink to that private TOML file.
+Point both `toolreview` and `toolreview-experimental` command symlinks at this
+same executable. The **invocation name** selects `.toolreview/` versus
+`.toolreview-experimental/`, the cache namespace, the config path and hook command.
+Each alias can have its own config, or both config paths can link to one private
+file. An explicit `TOOLREVIEW_CONFIG` takes precedence for either alias.
+
+An alias isolates settings and state; it does not pin a different code version.
+Use branches or a Git worktree in this repository when testing a code change.
+Existing hook commands need no reinstall if their command paths stay unchanged.
+Model/provider settings and private datasets never belong in a public commit.
+
 ## Evaluate with your models
 
 [examples/eval](examples/eval) contains a small synthetic allow/deny pair. It

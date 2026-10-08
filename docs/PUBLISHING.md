@@ -27,5 +27,5 @@ Proposed repository: `yerbolgmailcom/toolreview`, public, MIT licensed.
 
 The initial release has no fresh live-provider evaluation and no complete agent
 session interception test. Publication must not describe it as a validated
-security boundary. The installed private reviewer and personal website are
+security boundary. The installed reviewer and personal website are
 outside this publication operation.

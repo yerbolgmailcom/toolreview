@@ -15,7 +15,9 @@ mark changes made during that development; they are not third-party copyrights.
 Public-export changes include generic comments, help paths and synthetic test
 identifiers, plus a legacy test fixture's endpoint/model. Pre-release review also
 fixed the trust helper's config writes to preserve file modes and symlinks, and
-added five offline regression tests. The runtime review-decision logic is
+added five offline regression tests. The launcher also selects its instance by
+invocation name so multiple command aliases can share one executable without
+sharing config/state/cache namespaces. The runtime review-decision logic is
 unchanged. `tools/assets.py` is the author's asset editor from
 the same development tree. The additional public examples are newly written
 synthetic fixtures, not evidence of measured model accuracy.

@@ -61,3 +61,13 @@ No classifier/policy rewrite, new live-provider evaluation or complete agent-tur
 interception test was added. Hosted CI and its Ubuntu awk implementation still
 need their first run after the approved push. Action-version modernization can
 follow evidence from that run. No full-system security guarantee is claimed.
+
+## Follow-up: private configuration overlay
+
+The owner subsequently requested one maintained public implementation with private
+settings kept externally. The launcher now uses the invocation name for instance
+selection. Two additional offline launcher tests verify that symlink aliases share
+a source hash while keeping config/state/cache separate, that both aliases can
+share one private config symlink, and that environment configuration overrides it.
+These tests and the 189 embedded tests pass on Python 3.11 and 3.14. Assets still
+round-trip byte-identically. Review-decision policy remains unchanged.

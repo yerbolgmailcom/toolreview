@@ -9,8 +9,8 @@
 # .codex/hooks.json (hooks that call this script) and an empty state folder
 # (.<name>/) for the review history. At review time `hook` unpacks the code into
 # a cache keyed by this file's sha256, keeping the last 10 versions, and runs it
-# there. A copy named toolreview-experimental keeps its own cache and its own
-# state folder (.toolreview-experimental/), so both versions can run side by side.
+# there. An alias named toolreview-experimental keeps its own config, cache and
+# state folder (.toolreview-experimental/) while sharing this implementation.
 #
 # Copyright (c) 2026 Yerbol Akhmetbekov. SPDX-License-Identifier: MIT
 # Extracted from the author's reviewer development tree; see docs/PROVENANCE.md.
@@ -19,12 +19,13 @@
 set -eu
 
 SELF=$(readlink -f "$0")
-NAME=$(basename "$SELF")
+# The invocation name selects an instance; aliases can share one implementation.
+NAME=$(basename "$0")
 STATE_DIR=".$NAME"
 LINK="$HOME/.local/bin/$NAME"
 HOOK_COMMAND="$LINK hook"
-# Settings (classifier, resolver, Codex home) live in this file, never in the code; see
-# `$NAME config`. Stable and experimental copies read separate files.
+# Settings (classifier, resolver, Codex home) live in the config file, not the code; see
+# `$NAME config`. Stable and experimental aliases read separate config paths.
 export TOOLREVIEW_CONFIG=${TOOLREVIEW_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/$NAME/config.toml}
 CACHE_ROOT=${XDG_CACHE_HOME:-$HOME/.cache}/toolreview/$NAME
 KEEP=10

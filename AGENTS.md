@@ -8,8 +8,9 @@ Use the pinned Nix flake for additional development tools.
 Keep fixtures synthetic and offline unit tests free of provider calls. Never add
 personal configuration, transcripts, raw evaluation runs or credentials. Live
 model evaluations are distinct from unit tests and require an intended provider
-configuration. Do not install this release into the maintainer's working profile
-while testing; use a disposable profile/project.
+configuration. Test installation in disposable profiles/projects. Switching the
+maintainer's installed executable requires an explicit migration request (the
+owner authorized the initial single-source/private-overlay migration).
 
 Keep code changes on feature branches and commit coherent work promptly. Do not
 leave completed changes uncommitted; report remaining work explicitly. Inspect
@@ -19,3 +20,9 @@ with actual behavior. CLAUDE.md is a symlink to this canonical instruction file.
 
 Maintainer instruction for this release: obtain explicit OK before any push, public
 repository creation, or GitHub release. Local preparation and commits are authorized.
+
+The public repository is the only maintained executable source. Keep personal
+settings, prompts, private evaluations and historical development outside it.
+Command aliases select config/state/cache by invocation name, not by the resolved
+source filename. Run tools/test_aliases.py when changing launcher behavior. Do not
+create a private runtime fork or copy code into the personal overlay.
