@@ -11,7 +11,8 @@ First clean public export of the experimental tool-call reviewer.
 - Trust-helper config writes preserve permission bits and symlinks; new files
   default to mode 0600, with five regression tests.
 - Invocation-name aliases share one executable with separate config/state/cache
-  namespaces; private settings remain external. Two launcher regression tests
+  namespaces; independent stable/experimental worktrees share Git history, with
+  one installed reviewer per project. Private settings remain external. Launcher regression tests
   verify this behavior without changing an installed profile.
 - Setup guidance, data-flow and integration limitations, MIT license,
   synthetic evaluation examples, pinned Nix dev shell, and GitHub Actions tests.

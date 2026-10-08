@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 import unittest
 
@@ -40,6 +41,20 @@ class AliasTests(unittest.TestCase):
             self.assertIn('no .' + name + '/', p.stderr)
             versions.append(self.run_alias(alias, 'version'))
         self.assertEqual(versions[0], versions[1])
+    def test_different_checkout_versions_remain_independent(self):
+        # Disposable snapshots model worktree files without editing the installed code.
+        checkouts = []
+        for index, alias in enumerate(self.aliases):
+            checkout = self.root / ('checkout-' + str(index)); checkout.mkdir()
+            script = checkout / 'toolreview'; shutil.copy2(SOURCE, script)
+            alias.unlink(); alias.symlink_to(script); checkouts.append(script)
+        stable_before = self.run_alias(self.aliases[0], 'version')
+        experiment_before = self.run_alias(self.aliases[1], 'version')
+        checkouts[1].write_bytes(checkouts[1].read_bytes() + b'\n# experimental test revision\n')
+        self.assertEqual(self.run_alias(self.aliases[0], 'version'), stable_before)
+        self.assertNotEqual(self.run_alias(self.aliases[1], 'version'), experiment_before)
+        self.assertIn('toolreview-experimental-model', self.run_alias(self.aliases[1], 'config'))
+
     def test_both_aliases_can_read_one_private_config(self):
         private = self.root / 'private.toml'; private.write_text('[resolver]\nmodel = "shared-private"\n')
         for alias in self.aliases:

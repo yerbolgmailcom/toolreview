@@ -26,3 +26,11 @@ settings, prompts, private evaluations and historical development outside it.
 Command aliases select config/state/cache by invocation name, not by the resolved
 source filename. Run tools/test_aliases.py when changing launcher behavior. Do not
 create a private runtime fork or copy code into the personal overlay.
+
+Stable and experimental MUST have independently editable worktrees/branches of
+this one Git repository, with each installed command pointing to its own checkout.
+Do not collapse them to one executable target. Keep stable on the approved stable
+branch; develop experimental changes in the experimental worktree. Promotion is an
+explicit reviewed merge/fast-forward, never a file copy or automatic update of
+stable. Different projects can use different instances concurrently; one instance
+owns a project's hook file at a time.

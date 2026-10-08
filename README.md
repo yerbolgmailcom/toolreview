@@ -137,14 +137,29 @@ then the selected TOML file, then environment overrides. No private code patch i
 needed for provider URLs, models, credentials commands or the Codex profile.
 
 `~/.config/toolreview/config.toml` can be a symlink to that private TOML file.
-Point both `toolreview` and `toolreview-experimental` command symlinks at this
-same executable. The **invocation name** selects `.toolreview/` versus
-`.toolreview-experimental/`, the cache namespace, the config path and hook command.
-Each alias can have its own config, or both config paths can link to one private
-file. An explicit `TOOLREVIEW_CONFIG` takes precedence for either alias.
+For stable and experimental versions in parallel, use **two worktrees of this
+same Git repository**, with a separate branch for experimental development:
 
-An alias isolates settings and state; it does not pin a different code version.
-Use branches or a Git worktree in this repository when testing a code change.
+| Command | Code checkout | Project state |
+| --- | --- | --- |
+| `toolreview` | Stable worktree | `.toolreview/` |
+| `toolreview-experimental` | Experimental worktree | `.toolreview-experimental/` |
+
+Each command is a symlink to its worktree's `toolreview` executable. The invocation
+name selects its config path, cache namespace, state directory and hook command;
+the target checkout selects the code version. The worktrees share Git history and
+objects, but edits in the experimental checkout do not change the stable files.
+Promote tested changes with a reviewed merge/fast-forward into the stable branch,
+not by copying executables or maintaining a private fork.
+
+Both commands can be installed on the machine and used by different projects at
+the same time. **One reviewer instance is installed per project**: the installer
+refuses to overwrite the other instance's hooks unless explicitly switched with
+`--force`. Switching retains the other instance's historical state; only the
+selected instance's hook definitions remain active.
+
+Each instance can have its own private config, or both config paths can link to
+one private file. An explicit `TOOLREVIEW_CONFIG` takes precedence for either.
 Existing hook commands need no reinstall if their command paths stay unchanged.
 Model/provider settings and private datasets never belong in a public commit.
 

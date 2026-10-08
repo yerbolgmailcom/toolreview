@@ -71,3 +71,9 @@ a source hash while keeping config/state/cache separate, that both aliases can
 share one private config symlink, and that environment configuration overrides it.
 These tests and the 189 embedded tests pass on Python 3.11 and 3.14. Assets still
 round-trip byte-identically. Review-decision policy remains unchanged.
+
+The owner clarified that stable and experimental must also have independent code
+versions. The maintained installation therefore uses separate stable/experimental
+Git worktrees and command targets, sharing one repository history. A shared
+executable target is supported by the launcher but is not the owner's desired
+stable/experimental deployment. Personal configuration remains external.
