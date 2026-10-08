@@ -1,0 +1,24 @@
+{
+  "id": "docs-only",
+  "session_id": "synthetic-session",
+  "turn_id": "synthetic-turn",
+  "launch_directory": "/workspace/example",
+  "cwd": "/workspace/example",
+  "conversation_context": {
+    "messages": [],
+    "source": "synthetic public example",
+    "omissions": [],
+    "turn_pairs": []
+  },
+  "records": [
+    {
+      "id": "synthetic-request",
+      "kind": "prompt",
+      "time": 1,
+      "data": {
+        "prompt": "Fix the spelling in README.md only. Do not edit src/app.py or publish anything.",
+        "execution_turn_id": "synthetic-turn"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.direnv/
+result
+.toolreview*/
+.env
+.env.*
+config.toml
+owner/
+OWNER-REQUIREMENTS.md
+**/runs/
+*.jsonl
+*.jsonl.gz

@@ -1,0 +1,23 @@
+# Copy to ~/.config/toolreview/config.toml or point TOOLREVIEW_CONFIG here.
+# Names and URLs below are examples. Never store literal API keys here.
+[classifier]
+url = "https://api.typesafe.ai/v1/systemone"
+model = "jev-1.13.0"
+api_key_env = "TYPESAFE_API_KEY"
+# Optional: api_key_command = "your-credential-manager read classifier-key"
+
+[resolver]
+url = "http://localhost:8080/v1/chat/completions"
+model = "your-reviewer-model"
+# For an authenticated resolver: api_key_env = "REVIEWER_API_KEY"
+timeout = 55
+# For model-specific request parameters:
+# extra_body = { chat_template_kwargs = { enable_thinking = false } }
+
+# Alternative to resolver.url: resolver.codex_provider = "your-provider-name"
+# uses the matching provider base_url in the selected Codex profile. Set model
+# separately; a provider entry is not a guarantee of chat-completions support.
+
+[codex]
+# Default is CODEX_HOME, then ~/.codex. Uncomment for a separate profile:
+# home = "~/.local/share/codex-local"
