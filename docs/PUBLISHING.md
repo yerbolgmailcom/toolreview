@@ -4,14 +4,17 @@ Nothing in this plan authorizes publication. Obtain the owner's explicit OK for
 the exact final commit, repository name, license and public Git author metadata
 before creating a public repository, pushing, or creating a release.
 
-Proposed repository: `yerbolgmailcom/toolreview`, public, MIT licensed.
+Proposed repository: `yerbolgmailcom/toolreview`, public, licensed under Apache License 2.0.
 
 1. Finish local regression tests, the Python 3.11/3.14 checks, asset round-trip,
    secret scan and review of every tracked file. Confirm executable and symlink
    modes, a clean working tree, and a clean public history. Inspect author metadata
    with `git log --format=fuller`; an email in that history will become public.
    If author metadata changes, obtain approval for the resulting commit instead.
-2. After approval, create an **empty** repository: do not generate a README,
+2. The Apache candidate is prepared on `release/apache-2.0`. After the owner
+   approves promotion of its exact commit, fast-forward `release/initial-public`
+   to it in the stable worktree. This changes the installed stable source; include
+   that promotion in the approval request. Then create an **empty** repository: do not generate a README,
    license or gitignore on GitHub. Attach only the intended repository as remote.
 3. Push only the approved commit from `release/initial-public` to `main`, using
    the explicit refspec `release/initial-public:main`. Do not use `--all`,

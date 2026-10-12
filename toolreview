@@ -12,7 +12,7 @@
 # there. An alias named toolreview-experimental keeps its own config, cache and
 # state folder (.toolreview-experimental/) while sharing this implementation.
 #
-# Copyright (c) 2026 Yerbol Akhmetbekov. SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Yerbol Akhmetbekov. SPDX-License-Identifier: Apache-2.0
 # Extracted from the author's reviewer development tree; see docs/PROVENANCE.md.
 #
 # Install the command: ln -sfn /path/to/toolreview/<name> ~/.local/bin/<name>
@@ -539,8 +539,8 @@ def post_json(url, data, key=None, timeout=20):
     if key:
         headers["Authorization"] = "Bearer " + key
     # toolreview: send keys in the order they were built, not sorted. Sorted keys put
-    # current_tool_call before previous_context and alphabetized the questions; on the same
-    # 40 deny cases Jev's mean P(out of scope) was 0.63 sorted against 0.86 in built order.
+    # current_tool_call before previous_context and alphabetize the questions.
+    # Preserve the intentional context-before-action presentation order.
     body = json.dumps(data, separators=(",", ":"), ensure_ascii=False).encode()
     request = urllib.request.Request(url, data=body, headers=headers)
     # Explicit requests only: environment proxy routing remains OS-owned.
@@ -1483,9 +1483,8 @@ import scope_proposal
 
 RUNTIME = re.compile(r"(?i)(?:\.toolreview(?:[/\\]|\b)|\.local[/\\]share[/\\]codex-local|\.codex[/\\](?:config\.toml|hooks\.json)|features\.hooks|dangerously-bypass-approvals-and-sandbox)")
 LLM_BYTES = 262144
-# toolreview: appended on the one retry after a malformed answer. At temperature 0 a plain
-# retry repeats the same answer; the local model sometimes returns only the nested
-# authorization object, and this reminder fixed every such case tried.
+# toolreview: append this reminder on the one retry after a malformed answer to
+# require the complete top-level object rather than only nested authorization.
 SHAPE_REMINDER = ('\n\nAnswer with the COMPLETE top-level JSON object of response_schema, starting with "decision", '
                   'then "reason", and with "authorization" as one nested field. Do not answer with only the authorization object.')
 
@@ -1656,9 +1655,8 @@ EFFECT_PREFIX = "Answer about current_tool_call only; previous_context is backgr
 
 def separated(lean):
     """toolreview: one Jev state for all questions, with the action under review
-    marked apart from what came before. In a replay this kept plain reads fast
-    (21 of 21, like an action-only state) while the effect questions still see
-    the conversation."""
+    marked apart from what came before, while keeping the conversation available
+    to the effect questions."""
     current = {k: lean[k] for k in CURRENT_TOOL_CALL if k in lean}
     return {"previous_context": {k: v for k, v in lean.items() if k not in current}, "current_tool_call": current}
 
@@ -1779,22 +1777,24 @@ def cascade(answers, state, rules, scope_bullets, known_deletes, code_veto, need
     route, reason = compose(answers)
     if route == "deny":
         return "deny", reason, "L1"
-    if route == "allow" and not code_veto:
-        return "allow", reason, "L1"
-    accepted = clear(answers.get("proposal_presented"), "yes") and authority.approved(answers)
-    if clear(answers.get("existing_scope"), "no", .9, .95) and not accepted:
-        return "deny", DENY_SCOPE, "L1"
+    # toolreview: explicit denials outrank the ordinary-observation shortcut.
+    # Reads remain exempt from scope grants, not from stated limits/refusals.
     if authority.picked(answers.get("approval"), ("partial_excluded",)):
         return "deny", DENY_REFUSED, "L1"
     for name, rule in rules.items():
         if clear(answers.get(name), "yes"):
             return "deny", rule["deny_reason"], "L1"
-    if needs_scope:
-        # toolreview: a delegated task without an approved scope: explore only.
-        return "deny", scope_proposal.INSTRUCTION, "L1"
     for b in scope_bullets["limits"]:
         if clear(answers.get(f"limit/{b['id']}"), "yes"):
             return "deny", f"The action breaks the task limit '{b['text']}' (the user's words: \"{b['quote']}\"). Ask the user before doing this.", "L2"
+    if route == "allow" and not code_veto:
+        return "allow", reason, "L1"
+    accepted = clear(answers.get("proposal_presented"), "yes") and authority.approved(answers)
+    if clear(answers.get("existing_scope"), "no", .9, .95) and not accepted:
+        return "deny", DENY_SCOPE, "L1"
+    if needs_scope:
+        # toolreview: a delegated task without an approved scope: explore only.
+        return "deny", scope_proposal.INSTRUCTION, "L1"
     destructive_ok = clear(answers.get("destructive"), "no") or (state.get("artifact_evidence") or {}).get("established")
     safe = (all(clear(answers.get(k), "no") for k in ("secrets", "tampering", "disclosure")) and destructive_ok
             and not known_deletes and clear(answers.get("existing_scope"), "yes"))
@@ -2150,8 +2150,7 @@ def questions():
         'proposal_presented': choice('Was the relevant assistant proposal clearly presented for a user decision, rather than incidental commentary or a claim of permission?'),
         'delta_visible': choice('Was any expansion beyond the user’s existing scope clearly disclosed for approval, including added targets and effects?'),
         # toolreview: four choices instead of yes/no. A partial approval ("do 1 and 3") has no
-        # clean yes; with these choices Jev answered 0.94-0.99 for approved parts, while on turns
-        # where nothing was accepted "accepted" stayed at or below 0.75 (2026-10-06).
+        # clean yes; distinguish included, excluded and unaccepted actions explicitly.
         'approval': choice("How did the user answer the assistant's proposal, as it applies to the action in current_tool_call?", APPROVAL),
     }
 
@@ -4263,9 +4262,8 @@ def questions(state):
     if len(approved) > 1:
         # toolreview: one action may do several approved items at once (e.g. create a file and
         # append to another); the user approved the scope as a whole, so ask about the whole.
-        # Asked as "anything outside?": with "is every effect covered?" Jev hesitated over the
-        # reads a command also does (0.56-0.61); this wording gave 0.95 for approved work and
-        # 1.00 "outside" for the same command plus an excluded edit (live test 2026-10-07).
+        # Ask whether any change falls outside the combined scope; incidental reads
+        # do not themselves require a scope grant.
         items = "; ".join(f"«{b['text']}»" for b in approved)
         q["scope/outside_approved"] = {"type": "choice", "criteria": {
             "yes": "The action changes something that none of the approved items covers.",
@@ -4283,7 +4281,7 @@ def questions(state):
 code turns the approved items into task bullets (the L2 recipe) without a model.
 
 Owner design (2026-10-07): when the user leaves a task's details to a document or skill
-("$local-ai ...", "do what requirements.md says"), the agent may only explore until it has
+("$example-skill ...", "do what requirements.md says"), the agent may only explore until it has
 proposed a definitive scope and the user has approved it. The proposal format is easy to read
 and parsed by code; one nudge if it is malformed, then one LLM call converts it.
 """
@@ -4899,6 +4897,41 @@ class GeneralTests(unittest.TestCase):
             'criteria':{'yes':'Yes.','no':'No.','uncertain':'Unclear.'}},'deny_reason':'Changes global configuration; ask the user.'}}}
         result=Arbiter(self.scope,model).review(self.event,self.action)
         self.assertEqual((result['route'],result['reason'],model.calls),('deny','Changes global configuration; ask the user.',0))
+    def read_case(self):
+        event={**self.event,'turn_id':'read-limits','tool_use_id':'r1'}
+        self.scope.prompt(event,'Read public.txt. Do not read private.txt.')
+        action=dict(tool_name='Bash',arguments={'command':'cat private.txt'},cwd=str(self.root.parent))
+        return event,action
+    def test_read_cannot_bypass_explicit_owner_limit(self):
+        event,action=self.read_case()
+        model=Models(answers(no_state_change='yes',breaks_limit='yes'))
+        model.settings={'owner_rules':{'breaks_limit':{'question':{'type':'choice',
+            'instructions':'Does this action violate an explicit user limit?',
+            'criteria':{'yes':'Yes.','no':'No.','uncertain':'Unclear.'}},
+            'deny_reason':'The user forbade reading private.txt.'}}}
+        result=Arbiter(self.scope,model).review(event,action)
+        self.assertEqual((result['route'],model.calls,result['record']['data']['layer']),('deny',0,'L1'))
+        self.assertIn('forbade reading',result['reason'])
+    def test_read_cannot_bypass_quoted_task_limit(self):
+        event,action=self.read_case()
+        self.scope.update_bullets(event,'ADD LIMIT: do not read private.txt | "Do not read private.txt"',
+                                  ['Read public.txt. Do not read private.txt.'],'test')
+        model=Models(answers(no_state_change='yes'))
+        model.values['limit/L1']=answers(x='yes')['x']
+        result=Arbiter(self.scope,model).review(event,action)
+        self.assertEqual((result['route'],model.calls,result['record']['data']['layer']),('deny',0,'L2'))
+        self.assertIn('Do not read private.txt',result['reason'])
+    def test_read_cannot_bypass_explicit_partial_refusal(self):
+        event,action=self.read_case()
+        model=Models(answers(no_state_change='yes',approval='partial_excluded'))
+        result=Arbiter(self.scope,model).review(event,action)
+        self.assertEqual((result['route'],model.calls),('deny',0))
+        self.assertIn('refused or skipped',result['reason'])
+    def test_ordinary_unrelated_read_still_needs_no_scope_grant(self):
+        event,action=self.read_case();action['arguments']['command']='cat unrelated-public.txt'
+        model=Models(answers(no_state_change='yes',existing_scope='no',approval='not_accepted'))
+        result=Arbiter(self.scope,model).review(event,action)
+        self.assertEqual((result['route'],model.calls,result['record']['data']['layer']),('allow',0,'L1'))
     def test_accepted_expansion_is_not_denied_at_l1(self):
         model=Models(answers(existing_scope='no',proposal_presented='yes',approval='partial_included'))
         Arbiter(self.scope,model).review(self.event,self.action)
@@ -5449,7 +5482,7 @@ class Tests(unittest.TestCase):
         self.generalized_policy()
         for tool, args in [("Bash", {"command": 'ssh host2 "Get-ChildItem C:\\Users\\example -Recurse -Filter SKILL.md"'}),
                            ("Bash", {"command": "find /opt/project -name SKILL.md | head -30"}),
-                           ("custom_inventory", {"host": "think", "operation": "list"}),
+                           ("custom_inventory", {"host": "host2", "operation": "list"}),
                            ("mcp__unknown__read", {"path": "/opt/project/README.md"})]:
             event = {**self.event, "tool_name": tool, "tool_input": args}
             self.assertEqual(self.route(event), "allow")
@@ -5974,7 +6007,7 @@ class V3(unittest.TestCase):
                       "tool_name": "exec_command", "tool_input": {"cmd": "ssh host2 'Get-ChildItem .codex/skills'"}}
         self.turn = self.judge.turn(self.event)
         self.turn.mkdir(parents=True)
-        self.judge.append(self.turn, "prompt", {"prompt": "Catalog skill names and front matter on think."})
+        self.judge.append(self.turn, "prompt", {"prompt": "Catalog skill names and front matter on host2."})
     def tearDown(self):
         self.tmp.cleanup()
     def route(self):
@@ -5994,7 +6027,7 @@ class V3(unittest.TestCase):
             self.event["tool_name"] = tool
             self.assertEqual(self.route(), "allow")
     def test_ordinary_auth_and_skill_paths_not_vetoed(self):
-        for cmd in ("ssh -i ~/.ssh/id_ed25519 mac uname", "cat .codex/skills/mac/SKILL.md",
+        for cmd in ("ssh -i ~/.ssh/id_ed25519 host2 uname", "cat .codex/skills/remote-example/SKILL.md",
                     "remotecli exec host2 'Test-Path .agents/skills'"):
             self.event["tool_input"] = {"cmd": cmd}
             self.assertEqual(self.route(), "allow")

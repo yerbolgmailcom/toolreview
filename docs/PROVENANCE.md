@@ -17,11 +17,22 @@ identifiers, plus a legacy test fixture's endpoint/model. Pre-release review als
 fixed the trust helper's config writes to preserve file modes and symlinks, and
 added five offline regression tests. The launcher also selects its instance by
 invocation name so multiple command aliases can share one executable without
-sharing config/state/cache namespaces. The runtime review-decision logic is
-unchanged. `tools/assets.py` is the author's asset editor from
+sharing project state and code-cache namespaces. The release audit also corrected
+denial precedence: explicit owner rules,
+quoted task limits and partial refusals outrank the ordinary-read shortcut.
+Four regression tests cover the fix and the retained ordinary-read exemption.
+`tools/assets.py` is the author's asset editor from
 the same development tree. The additional public examples are newly written
 synthetic fixtures, not evidence of measured model accuracy.
 
-The included source is MIT licensed. Python, Codex, Nix, Git, Gitleaks and hosted
+The included source is licensed under Apache License 2.0. Python, Codex, Nix,
+Git, Gitleaks and hosted
 model services are separate dependencies with their own licenses and terms;
 this repository does not bundle their implementations or grant service access.
+
+The release candidate uses Apache License 2.0 at the owner's direction. Earlier
+local commits retain their historical MIT license, fixture host labels and
+implementation comments about unpublished experiments. Those commits contain
+no private development history or provider recordings; they have not been
+rewritten. Current fixtures use generic identifiers and current comments do not
+claim measured model accuracy from unpublished experiments.

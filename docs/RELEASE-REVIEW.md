@@ -77,3 +77,43 @@ versions. The maintained installation therefore uses separate stable/experimenta
 Git worktrees and command targets, sharing one repository history. A shared
 executable target is supported by the launcher but is not the owner's desired
 stable/experimental deployment. Personal configuration remains external.
+
+## Apache candidate audit — October 11, 2026
+
+The owner selected Apache License 2.0. LICENSE uses the Apache Software
+Foundation's canonical text; the executable SPDX header and current release
+documentation agree. Earlier local commits retain their historical MIT license
+and author metadata; no Git history was rewritten.
+
+An independent read-only Codex review (gpt-6.1-sol) covered tracked public files,
+all embedded assets, and the three preceding commits. It found a deterministic
+denial-precedence bug: the ordinary-read shortcut returned before checking
+explicit owner rules and quoted task limits. The release candidate now checks
+those denials and explicit partial refusals before the shortcut. Four end-to-end
+regressions cover the three denials and preserve ordinary unrelated reads without
+a task-specific scope grant. The reviewer independently inspected this correction.
+
+Current synthetic fixtures use generic host/skill labels. Unpublished numerical
+model-evaluation claims were removed from implementation comments; this does not
+change prompts or confidence thresholds. Historical commits retain earlier
+labels/comments. The shared endpoint-keyed classifier credential-command cache
+is documented as a limitation, with environment keys as the identity-specific
+alternative. No broader credential-cache redesign was included.
+
+Checks performed on the candidate:
+
+- All 193 embedded unit tests and all three launcher/alias tests pass on Python
+  3.14.7 and Python 3.11.16 (the pinned development shell).
+- All 25 embedded assets extract and round-trip byte-identically. Shell syntax
+  and compilation of every embedded Python module pass.
+- Codex CLI 0.159.2 registers, trusts and lists all five hooks, then removes their
+  definitions/trust in a disposable project/profile. Project trust and review
+  history remain, matching the documentation. A local fake model-list server
+  supplies setup validation; no real provider calls or installed-profile changes.
+- Gitleaks reports no detected secrets in candidate files or reachable public Git
+  history. File modes, symlinks and the publication tree are checked separately.
+
+No live-provider evaluation, complete agent-session interception test, or hosted
+CI run was performed. The review cannot independently prove original source
+ownership. Stable remains unchanged pending explicit promotion/publication
+approval; the candidate is on `release/apache-2.0`.

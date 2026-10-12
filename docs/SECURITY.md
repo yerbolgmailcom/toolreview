@@ -37,7 +37,11 @@ the endpoints you configure; credential commands you configure run locally.
 - `$XDG_RUNTIME_DIR/toolreview/`: classifier key cache, when a runtime directory
   is configured, using restrictive file permissions. It is only memory-backed
   if that directory is actually on tmpfs; otherwise use of this directory can
-  write the cache to disk. Do not set it to an untrusted/shared directory.
+  write the cache to disk. Do not set it to an untrusted/shared directory. Credential-
+  command results are cached by classifier endpoint, shared across instances.
+  Instances using different credential commands for the same endpoint can reuse
+  the first cached key. Use distinct `api_key_env` values for separate identities;
+  environment keys take precedence over that cache.
 - Selected `$CODEX_HOME/config.toml`: project and hook trust entries. Install
   modifies them; uninstall removes hook trust but retains project trust.
 - Evaluation `runs/`: model request/response recordings and results. Do not

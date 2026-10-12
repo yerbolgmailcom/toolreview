@@ -159,7 +159,9 @@ refuses to overwrite the other instance's hooks unless explicitly switched with
 selected instance's hook definitions remain active.
 
 Each instance can have its own private config, or both config paths can link to
-one private file. An explicit `TOOLREVIEW_CONFIG` takes precedence for either.
+one private file. Classifier credential-command caching is shared by endpoint;
+use separate `api_key_env` values for different identities at the same endpoint
+(see [credential-cache limits](docs/SECURITY.md)). An explicit `TOOLREVIEW_CONFIG` takes precedence for either.
 Existing hook commands need no reinstall if their command paths stay unchanged.
 Model/provider settings and private datasets never belong in a public commit.
 
@@ -195,5 +197,5 @@ python3 tools/assets.py join /tmp/toolreview-edit toolreview
 The Nix shell provides Python, coreutils, awk, Git and Gitleaks:
 `nix develop -c ./toolreview test`. See [contributing](CONTRIBUTING.md).
 
-Released under the [MIT license](LICENSE). See [provenance](docs/PROVENANCE.md)
+Released under the [Apache License 2.0](LICENSE). See [provenance](docs/PROVENANCE.md)
 for the clean source export and [release notes](CHANGELOG.md) for validation.
