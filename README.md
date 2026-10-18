@@ -1,6 +1,7 @@
 # toolreview
 
 A review layer for AI coding-agent actions, by Yerbol Akhmetbekov.
+The project is also called **JEV Reviewer** on my website; the executable is `toolreview`.
 
 `toolreview` checks a proposed tool call against the task, its limits, and the
 user's approvals before the host executes it. It combines checks in code,
@@ -13,6 +14,14 @@ not a security sandbox or a guarantee that an action is safe. Keep the host's
 sandbox and approval controls enabled. Model judgments can be wrong; host hook
 failures or unsupported tool paths can leave gaps. See [boundaries and data
 flow](docs/SECURITY.md).
+
+## Background and technical notes
+
+- [JEV Reviewer](https://akhmetbekov.com/blog/reviewer/): why I built it and what I learned experimenting with System One models.
+- [Teaching a reviewer what I actually authorized](https://akhmetbekov.com/blog/reviewer/notes/): decision layers, per-turn recipes and an 80-case development evaluation, including its failure and limitations.
+
+This README is the source for current setup instructions; the articles describe
+the experiment and its development findings.
 
 ## How it works
 
